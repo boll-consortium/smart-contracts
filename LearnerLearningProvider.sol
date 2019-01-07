@@ -1,7 +1,9 @@
 pragma solidity ^0.4.17;
+import './Registrar.sol';
 
 contract LearnerLearningProvider {
-
+    event LearnerLearningProviderContractEvents(address indexed sender, address indexed participantAddress,
+        address affectedContractAddress, string indexed actionType);
     struct LearningRecord {
         string queryResultHash;
         string queryHash;
@@ -12,10 +14,12 @@ contract LearnerLearningProvider {
         bool canRead;
         bool canWrite;
         bool canGrant;
+        bool isPendingRequest;
     }
     
     address owner;
     mapping(address => Permissions) permissions;
+    mapping(address => Permissions) permissionsRequests;
     address[] pendingRequests;
     LearningRecord[] learningRecords;
     mapping(string => bool) duplicateLearningLogTracker;
@@ -38,12 +42,16 @@ contract LearnerLearningProvider {
         return provider;
     }
     
-    function LearnerLearningProvider(address _owner, address _learner, bytes _recordType) public {
-        owner = _owner;
-        recordType = _recordType;
-        permissions[_learner] = Permissions(true, true, true);
-        permissions[msg.sender] = Permissions(true, true, true);
-        provider = msg.sender;
+    constructor(address _owner, address _learner, bytes _recordType, address registrarAddress, bytes accessToken) public {
+        Registrar registrar = Registrar(registrarAddress);
+        if(registrar.isApprovedInstitute(accessToken)){
+            owner = _owner;
+            recordType = _recordType;
+            permissions[_learner] = Permissions(true, true, true, false);
+            permissions[msg.sender] = Permissions(true, true, true, false);
+            provider = msg.sender;
+            emit LearnerLearningProviderContractEvents(msg.sender, _owner, address(this), "LLPC");
+        }
     }
 
     function insertLearningRecord(string queryString, string queryResultHash) public payable {
@@ -51,14 +59,16 @@ contract LearnerLearningProvider {
             if(duplicateLearningLogTracker[queryString] == false) {
                 learningRecords.push(LearningRecord(queryResultHash, queryString, msg.sender));
                 duplicateLearningLogTracker[queryString] = true;
+                emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertLearningRecord");
             }
         }
     }
     
-    function requestAccess() public payable {
-        Permissions memory permsn = permissions[msg.sender];
-        if(permsn.canGrant == false || permsn.canRead == false || permsn.canWrite == false ){
-            pendingRequests.push(msg.sender);
+    function requestAccess(bool grant, bool write, bool read) public payable {
+        if((permissions[msg.sender].canGrant == false || permissions[msg.sender].canRead == false
+          || permissions[msg.sender].canWrite == false)){
+            permissionsRequests[msg.sender] = Permissions(read, write, grant, true);
+            emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "requestAccess");
         }
     }
 
@@ -71,27 +81,20 @@ contract LearnerLearningProvider {
     }
 
     function grantAccess(address participantAddress, bool read, bool write, bool admin) public payable returns (bool) {
-        if (permissions[msg.sender].canGrant ) {
-            Permissions memory perm = permissions[participantAddress];
-            perm.canGrant = admin;
-            perm.canRead = read;
-            perm.canWrite = write;
-            permissions[participantAddress] = perm;
-            return true;
-        }else {
-            return false;
-        }
-    }
-
-    function grantAccess(uint participantIndex, bool read, bool write, bool admin) public payable returns (bool) {
-        if (permissions[msg.sender].canGrant) {
-            Permissions memory perm = permissions[pendingRequests[participantIndex]];
-            perm.canGrant = admin;
-            perm.canRead = read;
-            perm.canWrite = write;
-            permissions[pendingRequests[participantIndex]] = perm;
-            pendingRequests[participantIndex] = pendingRequests[pendingRequests.length-1];
-            delete pendingRequests[pendingRequests.length-1];
+        if (permissions[msg.sender].canGrant && permissionsRequests[participantAddress].isPendingRequest) {
+            permissions[participantAddress] = Permissions(read, write, admin, false);
+            uint arrayLen = getPendingRequestsCount();
+            for(uint i = 0; i < arrayLen; i++) {
+                if(pendingRequests[i] == participantAddress) {
+                    if(i != (pendingRequests.length-1)) {
+                        pendingRequests[i] = pendingRequests[arrayLen-1];
+                        delete pendingRequests[arrayLen-1];
+                        delete permissionsRequests[participantAddress];
+                    }
+                    break;
+                }
+            }
+            emit LearnerLearningProviderContractEvents(msg.sender, participantAddress, address(this), "grantAccess");
             return true;
         }else {
             return false;
@@ -113,15 +116,15 @@ contract LearnerLearningProvider {
         }
     }
 
-    function canGrant(address participantAddress) public constant returns (bool) {
-        return permissions[participantAddress].canGrant;
+    function canGrant(address participantAddress, bool pendingRequest) public constant returns (bool) {
+        return pendingRequest ? permissionsRequests[participantAddress].canGrant : permissions[participantAddress].canGrant;
     }
 
-    function canWrite(address participantAddress) public constant returns (bool) {
-        return permissions[participantAddress].canWrite;
+    function canWrite(address participantAddress, bool pendingRequest) public constant returns (bool) {
+        return pendingRequest ? permissionsRequests[participantAddress].canWrite : permissions[participantAddress].canWrite;
     }
 
-    function canRead(address participantAddress) public constant returns (bool) {
-        return permissions[participantAddress].canRead;
+    function canRead(address participantAddress, bool pendingRequest) public constant returns (bool) {
+        return pendingRequest ? permissionsRequests[participantAddress].canRead : permissions[participantAddress].canRead;
     }
 }
