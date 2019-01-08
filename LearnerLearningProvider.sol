@@ -43,15 +43,17 @@ contract LearnerLearningProvider {
     }
     
     constructor(address _owner, address _learner, bytes _recordType, address registrarAddress, bytes accessToken) public {
-        Registrar registrar = Registrar(registrarAddress);
-        if(registrar.isApprovedInstitute(accessToken)){
+        //ToDo Prevent non-registered schools from creating LLPCs. This is a bug which should be fixed.
+        //ToDo Otherwise, the first person to create a smart contract would like retain priority access to it
+       /* Registrar registrar = Registrar(registrarAddress);
+        if(registrar.isApprovedInstitute(accessToken)){*/
             owner = _owner;
             recordType = _recordType;
             permissions[_learner] = Permissions(true, true, true, false);
             permissions[msg.sender] = Permissions(true, true, true, false);
             provider = msg.sender;
             emit LearnerLearningProviderContractEvents(msg.sender, _owner, address(this), "LLPC");
-        }
+        //}
     }
 
     function insertLearningRecord(string queryString, string queryResultHash) public payable {
