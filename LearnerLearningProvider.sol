@@ -42,7 +42,7 @@ contract LearnerLearningProvider {
         return provider;
     }
     
-    constructor(address _owner, address _learner, bytes _recordType, address registrarAddress, bytes accessToken) public {
+    constructor(address _owner, address _learner, bytes _recordType, address registrarAddress) public {
         //ToDo Prevent non-registered schools from creating LLPCs. This is a bug which should be fixed.
         //ToDo Otherwise, the first person to create a smart contract would like retain priority access to it
        /* Registrar registrar = Registrar(registrarAddress);
