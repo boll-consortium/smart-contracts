@@ -7,7 +7,7 @@ contract Registrar {
         address ethAddress;
         bool isLearningProvider;
         address indexContract;
-        uint8 status; // 0 = rejected 1 = approved 2 = pending 3 = unregistered
+        uint8 status; // 0 = unregistered, 1 = approved, 2 = pending
     }
 
     struct SchoolsUsersRegistry {
@@ -82,11 +82,11 @@ function getIndexContract(address participantAddress) public constant returns (a
                     participant.ethAddress = participantAddress;
                     participant.isLearningProvider = isLearningProvider;
                     participant.indexContract = indexContract;
-                    participant.status = 2;
+                    participant.status = 1;
                 } else {
                     //already registered;
                     participant.isLearningProvider = isLearningProvider;
-                    participant.status = msg.sender==owner?1:2;
+                    participant.status = 1;
                     participant.indexContract = indexContract;
                 }
                 registeredParticipants[participantAddress] = participant;
