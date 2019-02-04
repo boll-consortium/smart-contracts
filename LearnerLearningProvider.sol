@@ -83,20 +83,37 @@ contract LearnerLearningProvider {
     }
 
     function grantAccess(address participantAddress, bool read, bool write, bool admin) public payable returns (bool) {
-        if (permissions[msg.sender].canGrant && permissionsRequests[participantAddress].isPendingRequest) {
+        if (permissions[msg.sender].canGrant) {
             permissions[participantAddress] = Permissions(read, write, admin, false);
-            uint arrayLen = getPendingRequestsCount();
-            for(uint i = 0; i < arrayLen; i++) {
-                if(pendingRequests[i] == participantAddress) {
-                    if(i != (pendingRequests.length-1)) {
-                        pendingRequests[i] = pendingRequests[arrayLen-1];
-                        delete pendingRequests[arrayLen-1];
-                        delete permissionsRequests[participantAddress];
+
+            if(permissionsRequests[participantAddress].isPendingRequest) {
+                uint arrayLen = getPendingRequestsCount();
+                for(uint i = 0; i < arrayLen; i++) {
+                    if(pendingRequests[i] == participantAddress) {
+                        if(i != (pendingRequests.length-1)) {
+                            pendingRequests[i] = pendingRequests[arrayLen-1];
+                            delete pendingRequests[arrayLen-1];
+                            delete permissionsRequests[participantAddress];
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+
             emit LearnerLearningProviderContractEvents(msg.sender, participantAddress, address(this), "grantAccess");
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    function updateAccess(address participantAddress, bool read, bool write, bool admin) public payable returns (bool) {
+        if (permissions[msg.sender].canGrant) {
+            permissions[participantAddress].canGrant = admin;
+            permissions[participantAddress].canRead = read;
+            permissions[participantAddress].canWrite = write;
+
+            emit LearnerLearningProviderContractEvents(msg.sender, participantAddress, address(this), "updateAccess");
             return true;
         }else {
             return false;
