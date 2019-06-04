@@ -3,7 +3,7 @@ import './Registrar.sol';
 
 contract LearnerLearningProvider {
     event LearnerLearningProviderContractEvents(address indexed sender, address indexed participantAddress,
-        address affectedContractAddress, string indexed actionType);
+        address affectedContractAddress, string indexed actionType, int index);
     struct LearningRecord {
         string queryResultHash;
         string queryHash;
@@ -52,7 +52,7 @@ contract LearnerLearningProvider {
             permissions[_learner] = Permissions(true, true, true, false);
             permissions[msg.sender] = Permissions(true, true, true, false);
             provider = msg.sender;
-            emit LearnerLearningProviderContractEvents(msg.sender, _owner, address(this), "LLPC");
+            emit LearnerLearningProviderContractEvents(msg.sender, _owner, address(this), "LLPC", -1);
         //}
     }
 
@@ -61,7 +61,7 @@ contract LearnerLearningProvider {
             if(duplicateLearningLogTracker[queryString] == false) {
                 learningRecords.push(LearningRecord(queryResultHash, queryString, msg.sender));
                 duplicateLearningLogTracker[queryString] = true;
-                emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertLearningRecord");
+                emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertLearningRecord", learningRecords.length);
             }
         }
     }
@@ -70,7 +70,7 @@ contract LearnerLearningProvider {
         if((permissions[msg.sender].canGrant == false || permissions[msg.sender].canRead == false
           || permissions[msg.sender].canWrite == false)){
             permissionsRequests[msg.sender] = Permissions(read, write, grant, true);
-            emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "requestAccess");
+            emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "requestAccess", -1);
         }
     }
 
@@ -100,7 +100,7 @@ contract LearnerLearningProvider {
                 }
             }
 
-            emit LearnerLearningProviderContractEvents(msg.sender, participantAddress, address(this), "grantAccess");
+            emit LearnerLearningProviderContractEvents(msg.sender, participantAddress, address(this), "grantAccess", -1);
             return true;
         }else {
             return false;
@@ -113,7 +113,7 @@ contract LearnerLearningProvider {
             permissions[participantAddress].canRead = read;
             permissions[participantAddress].canWrite = write;
 
-            emit LearnerLearningProviderContractEvents(msg.sender, participantAddress, address(this), "updateAccess");
+            emit LearnerLearningProviderContractEvents(msg.sender, participantAddress, address(this), "updateAccess", -1);
             return true;
         }else {
             return false;
