@@ -23,6 +23,7 @@ contract LearnerLearningProvider {
         uint8 min;
         uint8 max;
         uint8 score;
+        uint timestamp;
         uint recordIndex;
     }
     
@@ -77,9 +78,9 @@ contract LearnerLearningProvider {
         }
     }
 
-    function insertScore(bool completion, bool success, uint8 min, uint8 max, uint8 score, uint recordIndex) public payable {
+    function insertScore(bool completion, bool success, uint8 min, uint8 max, uint8 score, uint timestamp, uint recordIndex) public payable {
         if (permissions[msg.sender].canWrite) {
-            scores.push(Score(completion, success, min, max, score, recordIndex));
+            scores.push(Score(completion, success, min, max, score, timestamp, recordIndex));
             emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertScore", recordIndex);
 
         }
