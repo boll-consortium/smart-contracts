@@ -16,12 +16,23 @@ contract LearnerLearningProvider {
         bool canGrant;
         bool isPendingRequest;
     }
+
+    struct Score {
+        bool completion;
+        bool success;
+        uint8 min;
+        uint8 max;
+        uint8 score;
+        uint recordIndex;
+    }
     
     address owner;
     mapping(address => Permissions) permissions;
     mapping(address => Permissions) permissionsRequests;
     address[] pendingRequests;
     LearningRecord[] learningRecords;
+    Score [] scores;
+    bool makeScoresPublic = true;
     mapping(string => bool) duplicateLearningLogTracker;
     bytes recordType;
     address provider;
@@ -63,6 +74,14 @@ contract LearnerLearningProvider {
                 duplicateLearningLogTracker[queryString] = true;
                 emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertLearningRecord", learningRecords.length);
             }
+        }
+    }
+
+    function insertScore(bool completion, bool success, uint8 min, uint8 max, uint8 score, uint recordIndex) public payable {
+        if (permissions[msg.sender].canWrite) {
+            scores.push(Score(completion, success, min, max, score, recordIndex));
+            emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertScore", recordIndex);
+
         }
     }
     
@@ -132,6 +151,21 @@ contract LearnerLearningProvider {
         if (permissions[msg.sender].canRead) {
             return (learningRecords[index].queryResultHash,learningRecords[index].queryHash,
             learningRecords[index].writer);
+        }
+    }
+
+    function getScoresCount() public view returns (uint) {
+        if (permissions[msg.sender].canRead || makeScoresPublic) {
+            return scores.length;
+        }else {
+            return 0;
+        }
+    }
+
+    function getScore(uint index) public view returns (bool, bool, uint8, uint8, uint8, uint) {
+        if (permissions[msg.sender].canRead || makeScoresPublic) {
+            return (scores[index].completion,scores[index].success,
+            scores[index].min, scores[index].max, scores[index].score, scores[index].recordIndex);
         }
     }
 
