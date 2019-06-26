@@ -40,17 +40,17 @@ contract Registrar {
         return findUserAddress(userId, msg.sender, accessToken);
     }
 
-    function getIndexContract(address participantAddress) public constant returns (address) {
+    function getIndexContract(address participantAddress) public view returns (address) {
         //emit RegistrarContractEvents(msg.sender, participantAddress, address(this), "getIndexContract");
         return registeredParticipants[participantAddress].indexContract;
     }
 
-    function getStatus(address participantAddress) public constant returns (uint8) {
+    function getStatus(address participantAddress) public view returns (uint8) {
         //emit RegistrarContractEvents(msg.sender, participantAddress, address(this), "getStatus");
         return registeredParticipants[participantAddress].status;
     }
 
-    function checkIsLearningProvider(address participantAddress) public constant returns (bool) {
+    function checkIsLearningProvider(address participantAddress) public view returns (bool) {
         //emit RegistrarContractEvents(msg.sender, participantAddress, address(this), "checkIsLearningProvider");
         return registeredParticipants[participantAddress].isLearningProvider;
     }
