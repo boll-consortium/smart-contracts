@@ -3,6 +3,8 @@ import './LearnerLearningProvider.sol';
 import './ProviderIndex.sol';
 import './Registrar.sol';
 
+// web3j truffle generate --javaTypes /Users/admin/truffle-codes/build/contracts/UserIndex.json -o /Users/admin/repositories/boll-consortium/src/main/java -p jp.ac.kyoto_u.media.let.boll_consortium.contracts
+
 contract UserIndex {
     event UserIndexContractEvents(address indexed sender, address indexed participantAddress,
         address affectedContractAddress, string indexed actionType);
@@ -49,11 +51,11 @@ contract UserIndex {
 
     function insertTestimonial(address from, uint8 format, bytes url, bytes hash, address school, bool confidential, address registrarContract) public payable {
         Registrar registrar = Registrar(registrarContract);
-        ProviderIndex pi = ProviderIndex(address(registrarContract.getIndexContract(school)));
-        if (pi.staffMembers[from] && pi.staffMembers[from].active) {
+        ProviderIndex pi = ProviderIndex(address(registrar.getIndexContract(school)));
+        if (pi.isStaffActive(from)) {
             testimonials.push(Testimonial(from, format, url, hash, school, confidential));
         } else {
-            throw;
+            revert();
         }
     }
 
