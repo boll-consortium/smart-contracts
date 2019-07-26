@@ -1,6 +1,8 @@
 pragma solidity ^0.4.17;
 import './Registrar.sol';
 
+// web3j truffle generate --javaTypes /Users/admin/truffle-codes/build/contracts/LearnerLearningProvider.json -o /Users/admin/repositories/boll-consortium/src/main/java -p jp.ac.kyoto_u.media.let.boll_consortium.contracts
+
 contract LearnerLearningProvider {
     event LearnerLearningProviderContractEvents(address indexed sender, address indexed participantAddress,
         address affectedContractAddress, string indexed actionType, uint index);

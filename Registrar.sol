@@ -1,5 +1,7 @@
 pragma solidity ^0.4.17;
 
+// web3j truffle generate --javaTypes /Users/admin/truffle-codes/build/contracts/Registrar.json -o /Users/admin/repositories/boll-consortium/src/main/java -p jp.ac.kyoto_u.media.let.boll_consortium.contracts
+
 contract Registrar {
     event RegistrarContractEvents(address indexed sender, address indexed participantAddress,
         address affectedContractAddress, string indexed actionType);
