@@ -17,6 +17,7 @@ contract Registrar {
         bool isApproved;
         bytes accessToken;
         mapping(bytes => address) schoolId2BOLLAddress;
+        mapping(bytes => address) bollAddress2schoolId;
     }
 
     address owner;
@@ -38,8 +39,22 @@ contract Registrar {
         }
     }
 
+    function findUserId(address bollAddress, address schoolBOLLAddress, bytes accessToken) public view returns (address) {
+        if (isApprovedInstitute(accessToken)) {
+            if (schoolsUsersRegistry[schoolBOLLAddress].isApproved) {
+                //emit RegistrarContractEvents(msg.sender, schoolBOLLAddress, address(this), "findUserAddress");
+                return schoolsUsersRegistry[schoolBOLLAddress].bollAddress2schoolId[bollAddress];
+            }
+            return 0;
+        }
+    }
+
     function findUserAddress(bytes userId, bytes accessToken) public view returns (address) {
         return findUserAddress(userId, msg.sender, accessToken);
+    }
+
+    function findUserId(address bollAddress, bytes accessToken) public view returns (address) {
+        return findUserId(bollAddress, msg.sender, accessToken);
     }
 
     function getIndexContract(address participantAddress) public view returns (address) {
@@ -101,6 +116,7 @@ contract Registrar {
     function pairUserIdWithBOLLAddress(bytes userId, address bollAddress, bytes accessToken) public payable {
         if (isApprovedInstitute(accessToken)) {
             schoolsUsersRegistry[msg.sender].schoolId2BOLLAddress[userId] = bollAddress;
+            schoolsUsersRegistry[msg.sender].bollAddress2schoolId[bollAddress] = userId;
             emit RegistrarContractEvents(msg.sender, bollAddress, address(this), "pairUserIdWithBOLLAddress");
         }
 

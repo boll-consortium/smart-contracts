@@ -75,7 +75,7 @@ contract LearnerLearningProvider {
             if(duplicateLearningLogTracker[queryString] == false) {
                 learningRecords.push(LearningRecord(queryResultHash, queryString, msg.sender));
                 duplicateLearningLogTracker[queryString] = true;
-                emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertLearningRecord", learningRecords.length);
+                emit LearnerLearningProviderContractEvents(msg.sender, owner, address(this), "insertLearningRecord", learningRecords.length - 1);
             }
         }
     }
